@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -24,8 +25,11 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private BottomNavigationView bottomNav;
 
-    // Map pour associer menu item id à fragments
-    private final Map<Integer, Fragment> fragmentMap = new HashMap<>();
+    private final HomeFragment homeFragment = new HomeFragment();
+    private final FragmentFavorites favoritesFragment = new FragmentFavorites();
+    private final FragmentProfile profileFragment = new FragmentProfile();
+
+    private Fragment activeFragment = homeFragment; // fragment actif actuel
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,60 +40,67 @@ public class MainActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.navigation_view);
         bottomNav = findViewById(R.id.bottom_nav);
 
-        // Initialiser la Map
-        fragmentMap.put(R.id.nav_home, new HomeFragment());
-        fragmentMap.put(R.id.nav_favorites, new FragmentFavorites());
-        fragmentMap.put(R.id.nav_profile, new FragmentProfile());
-
-        // Fragment par défaut
-        if (savedInstanceState == null) {
-            replaceFragment(fragmentMap.get(R.id.nav_home));
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            startActivity(new Intent(this, LoginActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            finish();
+            return;
         }
 
+        // Ajouter tous les fragments au container, mais cacher ceux qui ne sont pas actifs
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, profileFragment).hide(profileFragment)
+                .add(R.id.fragment_container, favoritesFragment).hide(favoritesFragment)
+                .add(R.id.fragment_container, homeFragment)
+                .commit();
+
         bottomNav.setOnItemSelectedListener(item -> {
-            Fragment fragment = fragmentMap.get(item.getItemId());
-            if (fragment == null) {
-                fragment = new HomeFragment(); // valeur par défaut si l'id n'existe pas
-            }
-            replaceFragment(fragment);
+            switchFragment(item.getItemId());
             return true;
         });
 
         // Drawer Navigation
         navigationView.setNavigationItemSelectedListener(menuItem -> {
-            int id = menuItem.getItemId();
-
-            if (id == R.id.menu_logout) {
-                // Déconnexion utilisateur Firebase
+            if (menuItem.getItemId() == R.id.menu_logout) {
                 FirebaseAuth.getInstance().signOut();
-
-                // Rediriger vers LoginActivity
                 Intent intent = new Intent(this, LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-
-                // Fermer le drawer
                 drawerLayout.closeDrawer(GravityCompat.START);
-
             }
             return true;
         });
 
+        // Ouvrir un fragment spécifique si demandé
         String fragmentToOpen = getIntent().getStringExtra("openFragment");
         if ("FragmentHome".equals(fragmentToOpen)) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, new HomeFragment())
-                    .commit();
+            switchFragment(R.id.nav_home);
         }
-
     }
 
-    // Méthode utilitaire pour remplacer les fragments
-    private void replaceFragment(Fragment fragment) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
+    // Méthode pour changer de fragment
+    private void switchFragment(int itemId) {
+        Fragment fragmentToShow = null;
+        if (itemId == R.id.nav_home) fragmentToShow = homeFragment;
+        else if (itemId == R.id.nav_favorites) fragmentToShow = favoritesFragment;
+        else if (itemId == R.id.nav_profile) fragmentToShow = profileFragment;
+
+        if (fragmentToShow != null && fragmentToShow != activeFragment) {
+            getSupportFragmentManager().beginTransaction()
+                    .hide(activeFragment)
+                    .show(fragmentToShow)
+                    .commit();
+            activeFragment = fragmentToShow;
+        }
     }
+
+    public void showParentFragment(String parentName) {
+        if ("FragmentFavorites".equals(parentName)) {
+            switchFragment(R.id.nav_favorites);
+        } else {
+            switchFragment(R.id.nav_home);
+        }
+    }
+
 }
+

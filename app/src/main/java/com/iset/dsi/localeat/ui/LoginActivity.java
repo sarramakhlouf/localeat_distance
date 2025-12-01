@@ -3,22 +3,14 @@ package com.iset.dsi.localeat.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.iset.dsi.localeat.R;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.iset.dsi.localeat.R;
 import com.iset.dsi.localeat.data.FirebaseAuthService;
 import com.iset.dsi.localeat.utils.Validator;
@@ -35,7 +27,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login); // ton XML
+        setContentView(R.layout.activity_login);
 
         authService = new FirebaseAuthService();
 
@@ -47,33 +39,24 @@ public class LoginActivity extends AppCompatActivity {
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
         ivTogglePassword = findViewById(R.id.ivTogglePassword);
 
-        // Toggle password visibility
-        ivTogglePassword.setOnClickListener(v -> {
-            if (etPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
-                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-            } else {
-                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            }
-            etPassword.setSelection(etPassword.getText().length());
-        });
+        ivTogglePassword.setOnClickListener(v -> togglePasswordVisibility(etPassword));
 
-        // Navigate to Signup
         tvGoSignup.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, SignupActivity.class)));
+        tvForgotPassword.setOnClickListener(v ->
+                startActivity(new Intent(LoginActivity.this, ForgetPasswordActivity.class)));
+        backBtn.setOnClickListener(v ->
+                startActivity(new Intent(LoginActivity.this, SignupActivity.class)));
 
-        // Login Button
         btnLogin.setOnClickListener(v -> loginUser());
+    }
 
-        // Navigate to Forget Password
-        tvForgotPassword.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, ForgetPasswordActivity.class);
-            startActivity(intent);
-        });
-
-        backBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
-            startActivity(intent);
-        });
-
+    private void togglePasswordVisibility(EditText et) {
+        if (et.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+            et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+        } else {
+            et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        }
+        et.setSelection(et.getText().length());
     }
 
     private void loginUser() {
@@ -94,13 +77,11 @@ public class LoginActivity extends AppCompatActivity {
                 user -> {
                     Toast.makeText(LoginActivity.this, "Connexion réussie", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.putExtra("openFragment", "FragmentHome"); // Indiquer qu'on veut ouvrir FragmentHome
+                    intent.putExtra("openFragment", "FragmentHome");
                     startActivity(intent);
                     finish();
                 },
                 e -> Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show()
         );
     }
-
 }
-

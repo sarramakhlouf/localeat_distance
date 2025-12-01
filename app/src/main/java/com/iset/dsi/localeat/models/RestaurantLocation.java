@@ -8,6 +8,10 @@ public class RestaurantLocation {
 
     public RestaurantLocation() {} // constructeur vide obligatoire pour Firestore
 
+    public RestaurantLocation(String restaurantId, double latitude, double longitude) {
+        this.restaurantId = restaurantId;
+        this.location = new GeoPoint(latitude, longitude);
+    }
     public String getRestaurantId() { return restaurantId; }
     public void setRestaurantId(String restaurantId) { this.restaurantId = restaurantId; }
 

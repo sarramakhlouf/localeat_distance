@@ -24,13 +24,11 @@ public class SignupActivity extends AppCompatActivity {
     private EditText etUsername, etEmail, etPassword, etVerifyPassword;
     private Button btnSignup;
     private TextView tvGoLogin;
-
-    private ImageView backBtn,ivTogglePassword,ivToggleVerifyPassword, profileImage;
+    private ImageView backBtn, ivTogglePassword, ivToggleVerifyPassword, profileImage;
     private Uri selectedImageUri = null;
 
     private FirebaseAuthService authService;
 
-    // Picker d’image
     private final ActivityResultLauncher<String> imagePicker =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
@@ -56,36 +54,27 @@ public class SignupActivity extends AppCompatActivity {
         profileImage = findViewById(R.id.profileImage);
         ivTogglePassword = findViewById(R.id.ivTogglePassword);
         ivToggleVerifyPassword = findViewById(R.id.ivToggleVerifyPassword);
-        ivTogglePassword.setOnClickListener(v -> {
-            if (etPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
-                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-            } else {
-                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            }
-            etPassword.setSelection(etPassword.getText().length());
-        });
 
-        ivToggleVerifyPassword.setOnClickListener(v -> {
-            if (etVerifyPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
-                etVerifyPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-            } else {
-                etVerifyPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            }
-            etVerifyPassword.setSelection(etVerifyPassword.getText().length());
-        });
-
-        // Ouvrir picker d’image
+        ivTogglePassword.setOnClickListener(v -> togglePasswordVisibility(etPassword));
+        ivToggleVerifyPassword.setOnClickListener(v -> togglePasswordVisibility(etVerifyPassword));
         profileImage.setOnClickListener(v -> imagePicker.launch("image/*"));
 
-        // Aller au Login
         tvGoLogin.setOnClickListener(v ->
                 startActivity(new Intent(SignupActivity.this, LoginActivity.class)));
 
-        // Bouton Signup
         btnSignup.setOnClickListener(v -> signupUser());
 
         backBtn.setOnClickListener(v ->
                 startActivity(new Intent(SignupActivity.this, SplashActivity.class)));
+    }
+
+    private void togglePasswordVisibility(EditText et) {
+        if (et.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+            et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+        } else {
+            et.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        }
+        et.setSelection(et.getText().length());
     }
 
     private void signupUser() {
@@ -102,7 +91,9 @@ public class SignupActivity extends AppCompatActivity {
         authService.signup(this, email, password, name, null, selectedImageUri,
                 success -> {
                     Toast.makeText(SignupActivity.this, "Compte créé", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+                    // 🔹 Auto-login vers MainActivity
+                    Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                    intent.putExtra("openFragment", "FragmentHome");
                     startActivity(intent);
                     finish();
                 },

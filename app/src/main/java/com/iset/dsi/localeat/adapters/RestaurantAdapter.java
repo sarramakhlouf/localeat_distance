@@ -7,12 +7,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.iset.dsi.localeat.R;
 import com.iset.dsi.localeat.models.Restaurant;
 import com.iset.dsi.localeat.models.RestaurantLocation;
@@ -25,6 +30,11 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
     private Context context;
     private List<Restaurant> restaurantList;
     private List<RestaurantLocation> locationList;
+
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private String userId = FirebaseAuth.getInstance().getCurrentUser() != null
+            ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+            : null; // ou "anonymous" si pas de login
 
     public RestaurantAdapter(Context context, List<Restaurant> restaurantList, List<RestaurantLocation> locationList) {
         this.context = context;
@@ -67,7 +77,26 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
             holder.ivPhoto.setImageResource(R.drawable.ic_user_placeholder);
         }
 
-        // Click sur item
+        // Charger l'état initial du coeur
+        loadFavoriteState(restaurant, holder);
+
+        // Clic sur le coeur
+        holder.ivFavorite.setOnClickListener(v -> {
+            db.collection("users").document(userId).collection("favorites")
+                    .document(restaurant.getId())
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            removeFavorite(restaurant);
+                            holder.ivFavorite.setImageResource(R.drawable.ic_favorite_border);
+                        } else {
+                            addFavorite(restaurant);
+                            holder.ivFavorite.setImageResource(R.drawable.ic_favorite_filled);
+                        }
+                    });
+        });
+
+        // Click sur item pour ouvrir détail
         holder.itemView.setOnClickListener(v -> {
             // Chercher location correspondante
             RestaurantLocation loc = null;
@@ -79,12 +108,35 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
             }
 
             if (loc != null) {
-                FragmentDetails fragment = FragmentDetails.newInstance(restaurant, loc);
-                ((FragmentActivity) context).getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, fragment)
-                        .addToBackStack(null)
+
+                Log.e("ADAPTER_DEBUG", "Click restaurant: " + restaurant.getName());
+                Log.e("ADAPTER_DEBUG", "OpeningHour: " + restaurant.getOpeningHour());
+                Log.e("ADAPTER_DEBUG", "ClosingHour: " + restaurant.getClosingHour());
+
+                // Récupérer le fragment parent actuel (Home ou Favorites)
+                Fragment parentFragment = ((FragmentActivity) context)
+                        .getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_container);
+
+                String parentName = parentFragment != null ? parentFragment.getClass().getSimpleName() : "HomeFragment";
+
+                // Créer FragmentDetails avec le nom du parent
+                FragmentDetails fragment = FragmentDetails.newInstance(restaurant, loc, parentName);
+
+                FragmentTransaction transaction = ((FragmentActivity) context)
+                        .getSupportFragmentManager()
+                        .beginTransaction();
+
+                // Cacher le parent fragment si existe
+                if (parentFragment != null) {
+                    transaction.hide(parentFragment);
+                }
+
+                // Ajouter FragmentDetails et l'ajouter au backstack
+                transaction.add(R.id.fragment_container, fragment)
+                        .addToBackStack(parentFragment.getClass().getSimpleName()) // <- nom du parent
                         .commit();
+
             }
         });
     }
@@ -94,9 +146,58 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
         return restaurantList.size();
     }
 
+    private void addFavorite(Restaurant restaurant) {
+        if (userId == null) return;
+        db.collection("users")
+                .document(userId)
+                .collection("favorites")
+                .document(restaurant.getId())
+                .set(restaurant)
+                .addOnSuccessListener(unused ->
+                        Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show()
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void removeFavorite(Restaurant restaurant) {
+        if (userId == null) return;
+        db.collection("users")
+                .document(userId)
+                .collection("favorites")
+                .document(restaurant.getId())
+                .delete()
+                .addOnSuccessListener(unused ->
+                        Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show()
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void loadFavoriteState(Restaurant restaurant, RestaurantViewHolder holder) {
+        if (userId == null) {
+            holder.ivFavorite.setImageResource(R.drawable.ic_favorite_border);
+            return;
+        }
+        db.collection("users")
+                .document(userId)
+                .collection("favorites")
+                .document(restaurant.getId())
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        holder.ivFavorite.setImageResource(R.drawable.ic_favorite_filled);
+                    } else {
+                        holder.ivFavorite.setImageResource(R.drawable.ic_favorite_border);
+                    }
+                });
+    }
+
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvAddress, tvDistance;
-        ImageView ivPhoto;
+        ImageView ivPhoto, ivFavorite;
 
         public RestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -104,6 +205,7 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
             tvAddress = itemView.findViewById(R.id.tvAddress);
             tvDistance = itemView.findViewById(R.id.tvDistance);
             ivPhoto = itemView.findViewById(R.id.ivPhoto);
+            ivFavorite = itemView.findViewById(R.id.ivFavorite);
         }
     }
 }
