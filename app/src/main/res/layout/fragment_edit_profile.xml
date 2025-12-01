@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <ImageView
+            android:id="@+id/backBtn"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_back"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/tvEditProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit your profile"
+            android:textColor="@color/green"
+            android:textSize="28sp"
+            android:fontFamily="@font/inriaserif_bold"
+            android:layout_marginTop="25dp"/>
+
+        <TextView
+            android:id="@+id/tvSlogan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ajustez, améliorez, brillez"
+            android:textColor="#7A7A7A"
+            android:textSize="15sp"
+            android:fontFamily="@font/inter_bold"
+            android:layout_marginTop="5dp"/>
+
+        <RelativeLayout
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginTop="30dp">
+
+            <ImageView
+                android:id="@+id/profileImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_user_placeholder"
+                android:scaleType="centerCrop"
+                android:background="@drawable/circle_bg"
+                android:clipToOutline="true"/>
+
+            <ImageView
+                android:id="@+id/btnAddPhoto"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_add_photo"
+                android:background="@drawable/circle_white"
+                android:padding="5dp"/>
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/inputUsername"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Username"
+            android:padding="15dp"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/input_bg"
+            android:textColor="#000"
+            android:textColorHint="#A0A0A0"
+            android:inputType="textPersonName"/>
+
+        <EditText
+            android:id="@+id/inputEmail"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Email"
+            android:padding="15dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/input_bg"
+            android:textColor="#000"
+            android:textColorHint="#A0A0A0"
+            android:inputType="textEmailAddress"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="15dp">
+            <EditText
+                android:id="@+id/inputOldPassword"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Your old password"
+                android:padding="15dp"
+                android:background="@drawable/input_bg"
+                android:textColor="#000"
+                android:textColorHint="#A0A0A0"
+                android:inputType="textPassword"/>
+
+            <ImageView
+                android:id="@+id/ivToggleOldPassword"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="15dp"
+                android:src="@drawable/ic_eye"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="15dp">
+
+            <EditText
+                android:id="@+id/inputNewPassword"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Your new password"
+                android:padding="15dp"
+                android:background="@drawable/input_bg"
+                android:textColor="#000"
+                android:textColorHint="#A0A0A0"
+                android:inputType="textPassword"/>
+
+            <ImageView
+                android:id="@+id/ivToggleNewPassword"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="15dp"
+                android:src="@drawable/ic_eye"/>
+        </RelativeLayout>
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="373dp"
+            android:layout_height="55dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/green"
+            android:text="Save Modifications"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp" />
+    </LinearLayout>
+
+</ScrollView>

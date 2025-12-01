@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445019396340",
+    "project_id": "localeatapp-83d55",
+    "storage_bucket": "localeatapp-83d55.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445019396340:android:a14bd9447d9d984ea026a1",
+        "android_client_info": {
+          "package_name": "com.iset.dsi.localeat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOduuo_Z8WLSmga2S9LGGQxIr3XOBZAnM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

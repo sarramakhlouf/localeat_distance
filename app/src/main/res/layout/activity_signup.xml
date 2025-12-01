@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:gravity="center_horizontal">
+
+        <!-- Back Button -->
+        <ImageView
+            android:id="@+id/backBtn"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_back"
+            android:layout_gravity="start"/>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvCreateAccount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create an account"
+            android:textColor="@color/green"
+            android:textSize="28sp"
+            android:fontFamily="@font/inriaserif_bold"
+            android:layout_marginTop="20dp"/>
+
+        <!-- Profile Image -->
+        <RelativeLayout
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginTop="30dp">
+
+            <ImageView
+                android:id="@+id/profileImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_user_placeholder"
+                android:scaleType="centerCrop"
+                android:background="@drawable/circle_bg"
+                android:clipToOutline="true"/>
+
+            <ImageView
+                android:id="@+id/btnAddPhoto"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_add_photo"
+                android:background="@drawable/circle_white"
+                android:padding="5dp"/>
+        </RelativeLayout>
+
+        <!-- Username -->
+        <EditText
+            android:id="@+id/inputUsername"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Username"
+            android:padding="15dp"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/input_bg"
+            android:textColor="#000"
+            android:textColorHint="#A0A0A0"
+            android:inputType="text"/>
+
+        <!-- Email -->
+        <EditText
+            android:id="@+id/inputEmail"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Email"
+            android:padding="15dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/input_bg"
+            android:textColor="#000"
+            android:textColorHint="#A0A0A0"
+            android:inputType="textEmailAddress"/>
+
+        <!-- Password -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/inputPassword"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:hint="Password"
+                android:padding="15dp"
+                android:layout_marginTop="15dp"
+                android:background="@drawable/input_bg"
+                android:textColor="#000"
+                android:textColorHint="#A0A0A0"
+                android:inputType="textPassword"/>
+
+            <ImageView
+                android:id="@+id/ivTogglePassword"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="15dp"
+                android:src="@drawable/ic_eye"/>
+        </RelativeLayout>
+
+        <!-- Verify Password -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/inputVerifyPassword"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:hint="Verify password"
+                android:padding="15dp"
+                android:layout_marginTop="15dp"
+                android:background="@drawable/input_bg"
+                android:textColor="#000"
+                android:textColorHint="#A0A0A0"
+                android:inputType="textPassword"/>
+
+            <ImageView
+                android:id="@+id/ivToggleVerifyPassword"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="15dp"
+                android:src="@drawable/ic_eye"/>
+        </RelativeLayout>
+
+        <!-- Signup Button -->
+        <Button
+            android:id="@+id/btnSignup"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="40dp"
+            android:backgroundTint="@color/green"
+            android:text="Sign up"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp" />
+
+        <!-- Already have account -->
+        <TextView
+            android:id="@+id/tvGoSignup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Already have an account? Sign in"
+            android:textColor="@color/nav_unselected"
+            android:textSize="15sp"
+            android:fontFamily="@font/inter_bold"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="25dp"/>
+
+    </LinearLayout>
+
+</ScrollView>
