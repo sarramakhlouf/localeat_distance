@@ -43,7 +43,7 @@ public class FragmentFavorites extends Fragment {
         rvFavorites = view.findViewById(R.id.rvFavorites);
         rvFavorites.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new RestaurantAdapter(getContext(), favoriteList, locationList);
+        adapter = new RestaurantAdapter(getContext(), favoriteList, locationList, true);
         rvFavorites.setAdapter(adapter);
 
         loadFavorites(); // Charger les favoris
@@ -57,18 +57,22 @@ public class FragmentFavorites extends Fragment {
         db.collection("users")
                 .document(userId)
                 .collection("favorites")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
+                .addSnapshotListener((querySnapshot, error) -> {
+
+                    if (error != null || querySnapshot == null) return;
+
                     favoriteList.clear();
+
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         Restaurant restaurant = doc.toObject(Restaurant.class);
                         favoriteList.add(restaurant);
                     }
-                    adapter.notifyDataSetChanged();
 
-                    loadLocationsForFavorites(); // Charger les locations
+                    adapter.notifyDataSetChanged();
+                    loadLocationsForFavorites();
                 });
     }
+
 
     private void loadLocationsForFavorites() {
         db.collection("restaurant_location")

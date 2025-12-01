@@ -26,6 +26,7 @@ public class Restaurant {
     public String getPhotoUrl() { return photoUrl; }
     public double getRating() { return rating; }
     public double getDistance() { return distance; }
+
     @PropertyName("opening_hour")
     public String getOpeningHour() { return opening_hour; }
     @PropertyName("closing_hour")

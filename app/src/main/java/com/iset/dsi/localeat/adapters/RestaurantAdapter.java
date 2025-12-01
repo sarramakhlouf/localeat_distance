@@ -31,15 +31,21 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
     private List<Restaurant> restaurantList;
     private List<RestaurantLocation> locationList;
 
+    private boolean isFavoritesAdapter;
+
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String userId = FirebaseAuth.getInstance().getCurrentUser() != null
             ? FirebaseAuth.getInstance().getCurrentUser().getUid()
             : null; // ou "anonymous" si pas de login
 
-    public RestaurantAdapter(Context context, List<Restaurant> restaurantList, List<RestaurantLocation> locationList) {
+    public RestaurantAdapter(Context context, List<Restaurant> restaurantList,
+                             List<RestaurantLocation> locationList,
+                             boolean isFavoritesAdapter) {
         this.context = context;
         this.restaurantList = restaurantList;
         this.locationList = locationList;
+        this.isFavoritesAdapter = isFavoritesAdapter;
     }
 
     @NonNull
@@ -168,9 +174,14 @@ public class RestaurantAdapter extends RecyclerView.Adapter<RestaurantAdapter.Re
                 .collection("favorites")
                 .document(restaurant.getId())
                 .delete()
-                .addOnSuccessListener(unused ->
-                        Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show()
-                )
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show();
+
+                    if (isFavoritesAdapter) {
+                        restaurantList.remove(restaurant);
+                        notifyDataSetChanged();
+                    }
+                })
                 .addOnFailureListener(e ->
                         Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );

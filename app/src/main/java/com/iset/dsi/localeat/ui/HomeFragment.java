@@ -4,10 +4,13 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -26,6 +29,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -48,9 +52,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private RecyclerView recyclerView;
     private RestaurantAdapter adapter;
 
+    private EditText inputSearch;
     private List<Restaurant> restaurantList = new ArrayList<>();
     private List<RestaurantLocation> locationList = new ArrayList<>();
 
+    private List<Restaurant> fullRestaurantList = new ArrayList<>();
     private double userLat = 0, userLng = 0;
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -66,8 +72,19 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
+        inputSearch = view.findViewById(R.id.inputSearch);
+
         recyclerView = view.findViewById(R.id.recyclerRestaurants);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+
+        inputSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchRestaurants(s.toString());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
@@ -128,7 +145,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         userLat = lat;
         userLng = lng;
         isLocationReady = true;
-        Log.e(TAG, "📍 User location: " + userLat + ", " + userLng);
+        Log.e(TAG, "User location: " + userLat + ", " + userLng);
 
         if (isDataLoaded) {
             calculateDistances();
@@ -140,7 +157,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private void loadRestaurantsData() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-// Charger restaurants
         db.collection("restaurants").get().addOnSuccessListener(snapshot -> {
             restaurantList.clear();
             for (DocumentSnapshot doc : snapshot.getDocuments()) {
@@ -149,11 +165,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     restaurant.setId(doc.getId());
                     restaurant.setDistance(-1); // distance inconnue initialement
                     restaurantList.add(restaurant);
-                    Log.e(TAG, "🍽 Restaurant loaded: " + restaurant.getName() + " | ID = " + restaurant.getId());
+                    Log.e(TAG, "Restaurant loaded: " + restaurant.getName() + " | ID = " + restaurant.getId());
+                    fullRestaurantList.add(restaurant);
                 }
             }
 
-            // Charger locations MANUELLEMENT
             db.collection("restaurant_location").get().addOnSuccessListener(locSnapshot -> {
                 locationList.clear();
                 for (DocumentSnapshot doc : locSnapshot.getDocuments()) {
@@ -164,16 +180,16 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         loc.setRestaurantId(restaurantId);
                         loc.setLocation(geo);
                         locationList.add(loc);
-                        Log.e(TAG, "🔹 Location loaded: restaurantId='" + restaurantId + "' | geo=" + geo);
+                        Log.e(TAG, "Location loaded: restaurantId='" + restaurantId + "' | geo=" + geo);
                     } else {
-                        Log.e(TAG, "⚠️ Location missing restaurantId or GeoPoint for doc: " + doc.getId());
+                        Log.e(TAG, "Location missing restaurantId or GeoPoint for doc: " + doc.getId());
                     }
                 }
 
                 isDataLoaded = true;
 
                 if (isLocationReady) {
-                    Log.e(TAG, "⚡ All data ready → calculateDistances()");
+                    Log.e(TAG, "All data ready → calculateDistances()");
                     calculateDistances();
                 } else {
                     setupAdapter();
@@ -187,7 +203,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         for (Restaurant r : restaurantList) {
             boolean matched = false;
             for (RestaurantLocation loc : locationList) {
-                Log.e(TAG, "➡️ Checking R=" + r.getId() + " vs L=" + loc.getRestaurantId());
+                Log.e(TAG, "Checking R=" + r.getId() + " vs L=" + loc.getRestaurantId());
                 if (r.getId().equals(loc.getRestaurantId())) {
                     matched = true;
                     if(loc.getLocation() != null){
@@ -195,23 +211,21 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                                 loc.getLocation().getLatitude(),
                                 loc.getLocation().getLongitude());
                         r.setDistance(dist);
-                        Log.e(TAG, "✔ MATCH FOUND for " + r.getName() + " | distance=" + dist);
+                        Log.e(TAG, "MATCH FOUND for " + r.getName() + " | distance=" + dist);
                     } else {
-                        Log.e(TAG, "❌ GeoPoint NULL for restaurant: " + r.getName());
+                        Log.e(TAG, "GeoPoint NULL for restaurant: " + r.getName());
                         r.setDistance(-1);
                     }
                     break;
                 }
             }
             if(!matched){
-                Log.e(TAG, "❌ NO MATCH found for restaurant: " + r.getName());
+                Log.e(TAG, "NO MATCH found for restaurant: " + r.getName());
             }
         }
 
-        // Trier par distance
         Collections.sort(restaurantList, (r1, r2) -> Double.compare(r1.getDistance(), r2.getDistance()));
 
-        // Mettre à jour l’adapter après calcul
         setupAdapter();
         addMarkersOnMap();
     }
@@ -224,13 +238,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         b.setLatitude(lat2);
         b.setLongitude(lng2);
         double d = a.distanceTo(b) / 1000.0;
-        Log.e(TAG, "📏 Calculated distance: " + d + " km");
+        Log.e(TAG, "Calculated distance: " + d + " km");
         return d;
     }
 
     private void setupAdapter() {
         if (adapter == null) {
-            adapter = new RestaurantAdapter(getContext(), restaurantList, locationList);
+            adapter = new RestaurantAdapter(getContext(), restaurantList, locationList, false);
             recyclerView.setAdapter(adapter);
         } else {
             adapter.notifyDataSetChanged();
@@ -257,6 +271,21 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         }
+    }
+
+    private void searchRestaurants(String text) {
+        restaurantList.clear();
+        if (text.isEmpty()) {
+            restaurantList.addAll(fullRestaurantList);
+        } else {
+            String search = text.toLowerCase().trim();
+            for (Restaurant r : fullRestaurantList) {
+                if (r.getName().toLowerCase().contains(search)) {
+                    restaurantList.add(r);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
     }
 
     @Override
